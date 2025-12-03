@@ -1,2 +1,5 @@
 # env file
 *.env
+
+# qwen3_data folder
+qwen3_data/
