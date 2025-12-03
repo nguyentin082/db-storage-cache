@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  qwen3-embedding-cpu:
+    platform: linux/amd64
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    command: >
+      --model-id Qwen/Qwen3-Embedding-0.6B
+      --auto-truncate
+      --max-concurrent-requests 16
+      --max-batch-tokens 4096
+      --max-client-batch-size 8
+    ports:
+      - "7001:80"
+    volumes:
+      - ./qwen3_data:/data
+    restart: always
