@@ -23,7 +23,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongo_data:/data/db
-      - ./mongo-keyfile:/etc/mongo-keyfile:Z,ro
+      - ./mongo-keyfile:/etc/mongo-keyfile:ro
     networks:
       - app-network
 
