@@ -17,15 +17,15 @@ services:
         "/etc/mongo-keyfile",
       ]
     ports:
-      - "4017:27017"
+      - "${MONGO_PORT}:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
       - mongo_data:/data/db
       - ./mongo-keyfile:/etc/mongo-keyfile:ro
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   # MongoDB Express - Web UI for MongoDB
   mongo-express:
@@ -33,16 +33,16 @@ services:
     container_name: mongo-express
     restart: always
     ports:
-      - "4081:8081"
+      - "${MONGO_EXPRESS_PORT}:8081"
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongo:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_EXPRESS_USER}:${MONGO_EXPRESS_PASSWORD}@mongo:27017/
       ME_CONFIG_BASICAUTH_ENABLED: "true"
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: password
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
     depends_on:
       - mongo
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   # Milvus dependencies
   etcd:
@@ -63,7 +63,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   minio:
     container_name: milvus-minio
@@ -72,9 +72,11 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "4001:9001"
-      - "4000:9000"
+      - "${MINIO_API_PORT}:9001"
+      - "${MINIO_CONSOLE_PORT}:9000"
     volumes:
       - minio_data:/minio_data
     command: minio server /minio_data --console-address ":9001"
@@ -84,7 +86,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   # Milvus Standalone
   milvus:
@@ -95,8 +97,8 @@ services:
     security_opt:
       - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: etcd:2379
-      MINIO_ADDRESS: minio:9000
+      ETCD_ENDPOINTS: ${MILVUS_ETCD_ENDPOINTS}
+      MINIO_ADDRESS: ${MILVUS_MINIO_ADDRESS}
       MQ_TYPE: woodpecker
     volumes:
       - milvus_data:/var/lib/milvus
@@ -107,13 +109,13 @@ services:
       timeout: 20s
       retries: 3
     ports:
-      - "4530:19530"
-      - "4091:9091"
+      - "${MILVUS_GRPC_PORT}:19530"
+      - "${MILVUS_HTTP_PORT}:9091"
     depends_on:
       - etcd
       - minio
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   # Attu - Milvus Web UI (Optional)
   attu:
@@ -123,11 +125,11 @@ services:
     environment:
       MILVUS_URL: milvus:19530
     ports:
-      - "4082:3000"
+      - "${ATTU_PORT}:3000"
     depends_on:
       - milvus
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   # Redis
   redis:
@@ -135,8 +137,8 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "4379:6379"
-    command: redis-server --appendonly yes
+      - "${REDIS_PORT}:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     healthcheck:
@@ -145,7 +147,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
   # Redis Commander - Web UI for Redis (Optional)
   redis-commander:
@@ -153,13 +155,13 @@ services:
     container_name: redis-commander
     restart: always
     ports:
-      - "4083:8081"
+      - "${REDIS_COMMANDER_PORT}:8081"
     environment:
       - REDIS_HOSTS=local:redis:6379
     depends_on:
       - redis
     networks:
-      - app-network
+      - ${APP_NETWORK}
 
 volumes:
   mongo_data:
@@ -174,5 +176,5 @@ volumes:
     driver: local
 
 networks:
-  app-network:
+  ${APP_NETWORK}:
     driver: bridge
