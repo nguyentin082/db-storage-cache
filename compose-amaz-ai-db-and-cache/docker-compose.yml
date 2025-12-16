@@ -157,7 +157,10 @@ services:
     ports:
       - "${REDIS_COMMANDER_PORT}:8081"
     environment:
-      - REDIS_HOSTS=local:redis:6379:${REDIS_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_NAME=local
     depends_on:
       - redis
     networks:
