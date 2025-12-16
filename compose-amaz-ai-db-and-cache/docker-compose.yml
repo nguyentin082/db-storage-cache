@@ -25,7 +25,7 @@ services:
       - mongo_data:/data/db
       - ./mongo-keyfile:/etc/mongo-keyfile:ro
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   # MongoDB Express - Web UI for MongoDB
   mongo-express:
@@ -42,7 +42,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   # Milvus dependencies
   etcd:
@@ -63,7 +63,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   minio:
     container_name: milvus-minio
@@ -86,7 +86,7 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   # Milvus Standalone
   milvus:
@@ -115,7 +115,7 @@ services:
       - etcd
       - minio
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   # Attu - Milvus Web UI (Optional)
   attu:
@@ -129,7 +129,7 @@ services:
     depends_on:
       - milvus
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   # Redis
   redis:
@@ -147,7 +147,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
   # Redis Commander - Web UI for Redis (Optional)
   redis-commander:
@@ -161,7 +161,7 @@ services:
     depends_on:
       - redis
     networks:
-      - ${APP_NETWORK}
+      - app-network
 
 volumes:
   mongo_data:
@@ -176,5 +176,5 @@ volumes:
     driver: local
 
 networks:
-  ${APP_NETWORK}:
+  app-network:
     driver: bridge
