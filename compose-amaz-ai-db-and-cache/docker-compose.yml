@@ -2,6 +2,29 @@ version: "3.8"
 name: amaz-ai-db-and-cache
 
 services:
+  # Keyfile Generator (runs first, generates keyfile only)
+  keyfile-init:
+    image: mongo:7.0
+    container_name: keyfile-init
+    restart: "no"
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        if [ ! -f /keyfile-data/mongo-keyfile ]; then
+          echo "Generating MongoDB keyfile..."
+          openssl rand -base64 756 > /keyfile-data/mongo-keyfile
+          chmod 400 /keyfile-data/mongo-keyfile
+          chown 999:999 /keyfile-data/mongo-keyfile
+          echo "Keyfile generated successfully"
+        else
+          echo "Keyfile already exists"
+        fi
+    volumes:
+      - mongo_keyfile:/keyfile-data
+    networks:
+      - app-network
+
   # MongoDB
   mongo:
     image: mongo:7.0
@@ -14,7 +37,7 @@ services:
         "rs0",
         "--bind_ip_all",
         "--keyFile",
-        "/etc/mongo-keyfile",
+        "/etc/mongo-keyfile/mongo-keyfile",
       ]
     ports:
       - "${MONGO_PORT}:27017"
@@ -23,7 +46,62 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
       - mongo_data:/data/db
-      - ./mongo-keyfile:/etc/mongo-keyfile:ro
+      - mongo_keyfile:/etc/mongo-keyfile
+    depends_on:
+      keyfile-init:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Replica Set Initiator (runs after mongo is healthy)
+  rs-init:
+    image: mongo:7.0
+    container_name: rs-init
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+
+        # Wait for mongo to be ready
+        echo "Waiting for MongoDB to be ready..."
+        until mongosh --host mongo:27017 --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+          sleep 2
+        done
+
+        # Check if replica set is already initialized
+        echo "Checking replica set status..."
+        RS_STATUS=$$(mongosh --host mongo:27017 \
+          --username "$${MONGO_INITDB_ROOT_USERNAME}" \
+          --password "$${MONGO_INITDB_ROOT_PASSWORD}" \
+          --authenticationDatabase admin \
+          --quiet --eval "try { rs.status().ok } catch(e) { 0 }")
+
+        if [ "$$RS_STATUS" != "1" ]; then
+          echo "Initializing replica set..."
+          mongosh --host mongo:27017 \
+            --username "$${MONGO_INITDB_ROOT_USERNAME}" \
+            --password "$${MONGO_INITDB_ROOT_PASSWORD}" \
+            --authenticationDatabase admin \
+            --eval "rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] })"
+          echo "Replica set initialized successfully"
+        else
+          echo "Replica set already initialized"
+        fi
+
+        echo "MongoDB replica set initialization complete!"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     networks:
       - app-network
 
@@ -40,7 +118,8 @@ services:
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
     depends_on:
-      - mongo
+      rs-init:
+        condition: service_completed_successfully
     networks:
       - app-network
 
@@ -171,6 +250,8 @@ services:
 
 volumes:
   mongo_data:
+    driver: local
+  mongo_keyfile:
     driver: local
   etcd_data:
     driver: local
