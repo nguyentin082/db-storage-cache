@@ -1,10 +1,13 @@
 version: "3.8"
+name: amaz-ai-storage
 
 services:
   postgres:
     image: supabase/postgres:15.8.1.085
     container_name: supabase-postgres
     restart: unless-stopped
+    networks:
+      - supabase-network
     ports:
       - "${POSTGRES_PORT}:5432"
     environment:
@@ -18,7 +21,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXP: ${JWT_EXP}
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
       - ./init-roles.sql:/docker-entrypoint-initdb.d/init-scripts/01-init-roles.sql:ro
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
@@ -38,6 +41,8 @@ services:
     image: minio/minio
     container_name: supabase-minio
     restart: unless-stopped
+    networks:
+      - supabase-network
     command: server /data --console-address ":9001"
     ports:
       - "${MINIO_PORT}:9000"
@@ -46,11 +51,13 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
-      - ./data/minio:/data
+      - minio_data:/data
 
   auth:
     image: supabase/gotrue:v2.183.0
     container_name: supabase-auth
+    networks:
+      - supabase-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -94,6 +101,8 @@ services:
     image: postgrest/postgrest:v14.1
     container_name: supabase-rest
     restart: unless-stopped
+    networks:
+      - supabase-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -112,6 +121,8 @@ services:
     image: supabase/storage-api:v1.33.0
     container_name: supabase-storage
     restart: unless-stopped
+    networks:
+      - supabase-network
     healthcheck:
       test:
         [
@@ -156,6 +167,8 @@ services:
     image: supabase/postgres-meta:v0.93.1
     container_name: supabase-meta
     restart: unless-stopped
+    networks:
+      - supabase-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -173,6 +186,8 @@ services:
     image: kong:3.6
     container_name: supabase-kong
     restart: unless-stopped
+    networks:
+      - supabase-network
     depends_on:
       - auth
       - rest
@@ -195,6 +210,8 @@ services:
     image: supabase/studio:latest
     container_name: supabase-studio
     restart: unless-stopped
+    networks:
+      - supabase-network
     depends_on:
       - kong
     environment:
@@ -206,3 +223,16 @@ services:
       SUPABASE_SERVICE_KEY: ${SERVICE_KEY}
     ports:
       - "${STUDIO_PORT}:3000"
+
+volumes:
+  postgres_data:
+    driver: local
+    name: supabase_postgres_data
+  minio_data:
+    driver: local
+    name: supabase_minio_data
+
+networks:
+  supabase-network:
+    driver: bridge
+    name: supabase_network
