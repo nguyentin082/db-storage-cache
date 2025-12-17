@@ -37,6 +37,7 @@ services:
   minio:
     image: minio/minio
     container_name: supabase-minio
+    restart: unless-stopped
     command: server /data --console-address ":9001"
     ports:
       - "${MINIO_PORT}:9000"
@@ -53,7 +54,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: on-failure:10
+    restart: unless-stopped
     healthcheck:
       test:
         [
@@ -171,6 +172,7 @@ services:
   kong:
     image: kong:3.6
     container_name: supabase-kong
+    restart: unless-stopped
     depends_on:
       - auth
       - rest
@@ -192,6 +194,7 @@ services:
   studio:
     image: supabase/studio:latest
     container_name: supabase-studio
+    restart: unless-stopped
     depends_on:
       - kong
     environment:
