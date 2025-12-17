@@ -92,7 +92,7 @@ services:
             --username "$${MONGO_INITDB_ROOT_USERNAME}" \
             --password "$${MONGO_INITDB_ROOT_PASSWORD}" \
             --authenticationDatabase admin \
-            --eval "rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] })"
+            --eval "rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: '$${MONGO_RS_HOST}' }] })"
           echo "Replica set initialized successfully"
         else
           echo "Replica set already initialized"
@@ -102,6 +102,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_RS_HOST: ${MONGO_RS_HOST}
     networks:
       - app-network
 
