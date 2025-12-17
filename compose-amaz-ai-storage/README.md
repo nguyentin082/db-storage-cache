@@ -21,7 +21,7 @@ cp .env.example .env
 # 3. Start services
 docker compose up -d
 
-# 4. Access Studio at http://localhost:3000
+# 4. Access Studio at http://localhost:23000
 ```
 
 ## Configuration
@@ -84,11 +84,11 @@ docker compose up -d --build --force-recreate
 
 | Service | URL |
 |---------|-----|
-| Studio | http://localhost:3000 |
-| Kong API Gateway | http://localhost:8000 |
-| PostgreSQL | localhost:5432 |
-| MinIO Console | http://localhost:9001 |
-| Storage API | http://localhost:5000 |
+| Studio | http://localhost:23000 |
+| Kong API Gateway | http://localhost:28000 |
+| PostgreSQL | localhost:25432 |
+| MinIO Console | http://localhost:29001 |
+| Storage API | http://localhost:25000 |
 
 *Ports configurable via `.env`*
 
@@ -134,25 +134,25 @@ docker compose logs  # Check errors
 ### Port conflict
 ```bash
 # Check what's using the port
-sudo lsof -i :5432
+sudo lsof -i :25432
 
 # Change port in .env
-POSTGRES_PORT=5433
+POSTGRES_PORT=25433
 ```
 
 ## Testing
 
 ```bash
 # Test Storage (use your SERVICE_KEY from .env)
-curl "http://localhost:8000/storage/v1/bucket" \
+curl "http://localhost:28000/storage/v1/bucket" \
   -H "Authorization: Bearer YOUR_SERVICE_KEY"
 
 # Test PostgREST (use your ANON_KEY)
-curl "http://localhost:8000/rest/v1/" \
+curl "http://localhost:28000/rest/v1/" \
   -H "apikey: YOUR_ANON_KEY"
 
 # Test Auth
-curl "http://localhost:8000/auth/v1/health"
+curl "http://localhost:28000/auth/v1/health"
 ```
 
 ## Security Checklist
