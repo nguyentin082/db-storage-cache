@@ -3,3 +3,7 @@
 
 # qwen3_data folder
 qwen3_data/
+
+data/
+
+docker-compose-official.yml
