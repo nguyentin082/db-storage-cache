@@ -1,0 +1,22 @@
+# Environment variables - NEVER commit this file!
+.env
+
+# Data directories
+data/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+generate_jwt.py
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
