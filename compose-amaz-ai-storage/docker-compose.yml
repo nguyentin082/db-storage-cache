@@ -130,8 +130,8 @@ services:
       rest:
         condition: service_started
     environment:
-      ANON_KEY: anon-key
-      SERVICE_KEY: service-role-key
+      ANON_KEY: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiZXhwIjoyMDgxMzE4MjYyfQ.s4HrGe1ma4sH6D0lIiRkemMSYfnXFXm4IH3VAQfIbHg
+      SERVICE_KEY: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJzZXJ2aWNlX3JvbGUiLCJleHAiOjIwODEzMTgyNjJ9.wJ-sAOXf3fmULECn0PQSdL0Qgay0BEvDdMVY1bkEt7U
       POSTGREST_URL: http://rest:3000
       PGRST_JWT_SECRET: super-secret-jwt-super-secret-jwt
       DATABASE_URL: postgres://supabase_storage_admin:postgres@postgres:5432/postgres
@@ -197,7 +197,9 @@ services:
     environment:
       STUDIO_PG_META_URL: http://meta:8080
       POSTGRES_PASSWORD: postgres
-      SUPABASE_URL: http://localhost:8000
-      SUPABASE_ANON_KEY: anon-key
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: http://localhost:8000
+      SUPABASE_ANON_KEY: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiZXhwIjoyMDgxMzE4MjYyfQ.s4HrGe1ma4sH6D0lIiRkemMSYfnXFXm4IH3VAQfIbHg
+      SUPABASE_SERVICE_KEY: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJzZXJ2aWNlX3JvbGUiLCJleHAiOjIwODEzMTgyNjJ9.wJ-sAOXf3fmULECn0PQSdL0Qgay0BEvDdMVY1bkEt7U
     ports:
       - "3000:3000"
