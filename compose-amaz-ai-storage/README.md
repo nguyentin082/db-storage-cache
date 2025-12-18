@@ -1,11 +1,12 @@
 # Supabase Local Setup
 
-Complete Supabase stack with PostgreSQL, MinIO, Auth, Storage API, PostgREST, Kong, and Studio.
+Complete Supabase stack with PostgreSQL, Auth, Storage API, PostgREST, Kong, and Studio.
 
 **Features:**
 - ✅ All configs in `.env` file - no hard-coded values
 - ✅ Easy port customization
 - ✅ Auto JWT token generation
+- ✅ File-based storage (no S3/MinIO dependency)
 - ✅ Production-ready
 
 ## Quick Start
@@ -31,7 +32,7 @@ All settings are in `.env` file organized by category:
 **Ports** - Customize any service port
 **Database** - PostgreSQL credentials and URLs
 **JWT** - Secrets and tokens (most important!)
-**MinIO** - S3-compatible storage settings
+**Storage** - File-based storage backend (optional: MinIO/S3)
 **Auth/Storage/REST** - Service-specific configs
 
 ### Change Ports
@@ -87,10 +88,11 @@ docker compose up -d --build --force-recreate
 | Studio | http://localhost:23000 |
 | Kong API Gateway | http://localhost:28000 |
 | PostgreSQL | localhost:25432 |
-| MinIO Console | http://localhost:29001 |
 | Storage API | http://localhost:25000 |
 
 *Ports configurable via `.env`*
+
+**Note:** MinIO services (minio, minio-init) are included but optional. Storage uses file-based backend by default.
 
 ## JWT Tokens
 
@@ -176,6 +178,7 @@ curl "http://localhost:28000/auth/v1/health"
 | ANON_KEY | Public access token | Generated |
 | SERVICE_KEY | Admin access token | Generated |
 | POSTGRES_PASSWORD | DB password | `postgres` |
+| STORAGE_BACKEND | Storage type (`file` or `s3`) | `file` |
 | *_PORT | Service ports | Various |
 
 Full list in `.env.example`

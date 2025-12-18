@@ -1,35 +1,10 @@
 _format_version: '3.0'
 
-# Global CORS Plugin
-plugins:
-    - name: cors
-      config:
-          origins:
-              - '*'
-          methods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-              - HEAD
-          headers:
-              - Accept
-              - Accept-Version
-              - Content-Length
-              - Content-MD5
-              - Content-Type
-              - Date
-              - X-Auth-Token
-              - Authorization
-              - apikey
-              - X-Client-Info
-          exposed_headers:
-              - X-Auth-Token
-          credentials: true
-          max_age: 3600
-          preflight_continue: false
+# Removed global CORS - let Storage service handle it
+# plugins:
+#     - name: cors
+#       config:
+#           ...
 
 services:
     - name: auth
@@ -52,3 +27,51 @@ services:
           - name: storage
             paths:
                 - /storage/v1
+            plugins:
+                - name: cors
+                  config:
+                      origins:
+                          - '*'
+                      methods:
+                          - GET
+                          - HEAD
+                          - PUT
+                          - PATCH
+                          - POST
+                          - DELETE
+                          - OPTIONS
+                      headers:
+                          - Accept
+                          - Accept-Version
+                          - Content-Length
+                          - Content-MD5
+                          - Content-Type
+                          - Date
+                          - X-Auth-Token
+                          - Authorization
+                          - apikey
+                          - X-Client-Info
+                          - x-upsert
+                          - Range
+                          - X-Requested-With
+                          - cache-control
+                          - x-amz-user-agent
+                          - tus-resumable
+                          - upload-length
+                          - upload-metadata
+                          - upload-offset
+                          - content-encoding
+                          - x-source
+                      exposed_headers:
+                          - X-Auth-Token
+                          - Content-Range
+                          - Content-Length
+                          - Accept-Ranges
+                          - tus-resumable
+                          - tus-version
+                          - tus-extension
+                          - upload-offset
+                          - upload-length
+                          - location
+                      credentials: true
+                      max_age: 3600
