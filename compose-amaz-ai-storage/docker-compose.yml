@@ -37,52 +37,54 @@ services:
         "log_min_messages=fatal",
       ]
 
-  minio:
-    image: minio/minio:latest
-    container_name: supabase-minio
-    restart: unless-stopped
-    networks:
-      - supabase-network
-    ports:
-      - "${MINIO_PORT}:9000"
-      - "${MINIO_CONSOLE_PORT}:9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    command: server /data --console-address ":9001"
+  # MinIO services commented out - using file-based storage instead
+  # Uncomment if switching back to S3 storage backend
+  # minio:
+  #   image: minio/minio:latest
+  #   container_name: supabase-minio
+  #   restart: unless-stopped
+  #   networks:
+  #     - supabase-network
+  #   ports:
+  #     - "${MINIO_PORT}:9000"
+  #     - "${MINIO_CONSOLE_PORT}:9001"
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+  #   volumes:
+  #     - minio_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "mc", "ready", "local"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #   command: server /data --console-address ":9001"
 
-  minio-init:
-    image: minio/mc
-    container_name: supabase-minio-init
-    networks:
-      - supabase-network
-    depends_on:
-      minio:
-        condition: service_healthy
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      S3_BUCKET: ${S3_BUCKET}
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
-      if ! mc ls myminio/$${S3_BUCKET} >/dev/null 2>&1; then
-        echo 'Creating bucket: '$${S3_BUCKET};
-        mc mb myminio/$${S3_BUCKET};
-        mc anonymous set public myminio/$${S3_BUCKET};
-        echo 'Bucket '$${S3_BUCKET}' created and configured';
-      else
-        echo 'Bucket '$${S3_BUCKET}' already exists';
-      fi;
-      "
-    restart: "no"
+  # minio-init:
+  #   image: minio/mc
+  #   container_name: supabase-minio-init
+  #   networks:
+  #     - supabase-network
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+  #     S3_BUCKET: ${S3_BUCKET}
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+  #     if ! mc ls myminio/$${S3_BUCKET} >/dev/null 2>&1; then
+  #       echo 'Creating bucket: '$${S3_BUCKET};
+  #       mc mb myminio/$${S3_BUCKET};
+  #       mc anonymous set public myminio/$${S3_BUCKET};
+  #       echo 'Bucket '$${S3_BUCKET}' created and configured';
+  #     else
+  #       echo 'Bucket '$${S3_BUCKET}' already exists';
+  #     fi;
+  #     "
+  #   restart: "no"
 
   auth:
     image: supabase/gotrue:v2.183.0
@@ -256,9 +258,9 @@ volumes:
   postgres_data:
     driver: local
     name: supabase_postgres_data
-  minio_data:
-    driver: local
-    name: supabase_minio_data
+  # minio_data:  # Commented out - using file-based storage
+  #   driver: local
+  #   name: supabase_minio_data
   storage_data:
     driver: local
     name: supabase_storage_data
