@@ -27,3 +27,4 @@ volumes:
 networks:
   llm_network:
     driver: bridge
+# docker exec -it ollama ollama run qwen2.5:3b
