@@ -1,0 +1,13 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: open-webui
+    ports:
+      - "11433:8080"
+    volumes:
+      - open-webui_data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  open-webui_data:
+    driver: local
