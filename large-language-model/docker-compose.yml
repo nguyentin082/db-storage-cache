@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434" # Ollama API port
+    environment:
+      - OLLAMA_MODELS_DIR=/root/.ollama/models
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - llm_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+volumes:
+  ollama_data:
+    driver: local
+
+networks:
+  llm_network:
+    driver: bridge
